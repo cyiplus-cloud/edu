@@ -21,7 +21,18 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            /* 모바일에서 잘림 방지를 위해 auto로 변경 */
+            overflow: auto; 
+        }
+
+        .device-wrapper {
+            /* 스케일링을 위한 래퍼 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .device-container {
@@ -31,6 +42,13 @@
             padding: 10px;
             box-shadow: 0 30px 60px rgba(0,0,0,0.6);
             border: 2px solid #555;
+            
+            /* 고정 크기 유지 (스크립트로 스케일링) */
+            width: 1045px; 
+            height: 480px;
+            flex-shrink: 0; /* Flex 컨테이너 내에서 찌그러짐 방지 */
+            transform-origin: center center;
+            transition: transform 0.2s ease;
         }
 
         .main-panel {
@@ -184,6 +202,8 @@
             color: #333;
             box-shadow: 3px 5px 8px rgba(0,0,0,0.2), inset 1px 1px 2px white;
             transition: transform 0.1s, box-shadow 0.1s;
+            /* 모바일 터치 시 딜레이 제거 */
+            touch-action: manipulation; 
         }
 
         .circle-btn:active {
@@ -233,6 +253,7 @@
             cursor: pointer;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3), inset 2px 2px 5px rgba(255,255,255,0.3);
             transition: all 0.2s;
+            touch-action: manipulation;
         }
 
         .estop-btn:active {
@@ -277,100 +298,143 @@
 </head>
 <body>
 
-<div class="device-container">
-    <div class="main-panel">
-        <div id="boot-overlay" onclick="startBoot()">
-            <div class="boot-msg">POWER S/W ON</div>
-            <div class="boot-sub">클릭하여 전원을 켜세요</div>
-        </div>
+<!-- 래퍼 추가: 스케일링 적용을 위해 -->
+<div class="device-wrapper">
+    <div class="device-container">
+        <div class="main-panel">
+            <div id="boot-overlay" onclick="startBoot()">
+                <div class="boot-msg">POWER S/W ON</div>
+                <div class="boot-sub">클릭하여 전원을 켜세요</div>
+            </div>
 
-        <div class="brand-area">
-            <div class="brand-logo">S Century</div>
-            <div class="model-name">CENTRONIC10</div>
-            <div class="sub-brand">micom control system</div>
-        </div>
+            <div class="brand-area">
+                <div class="brand-logo">S Century</div>
+                <div class="model-name">CENTRONIC10</div>
+                <div class="sub-brand">micom control system</div>
+            </div>
 
-        <div class="display-container">
-            <div class="lcd-screen">
-                <div id="line1" class="lcd-line"></div>
-                <div id="line2" class="lcd-line"></div>
+            <div class="display-container">
+                <div class="lcd-screen">
+                    <div id="line1" class="lcd-line"></div>
+                    <div id="line2" class="lcd-line"></div>
+                </div>
+            </div>
+
+            <div class="com-lights">
+                <div class="led-group">
+                    <span>R x</span>
+                    <div id="rx-led" class="led"></div>
+                    <span>통 신</span>
+                </div>
+                <div class="led-group">
+                    <span>T x</span>
+                    <div id="tx-led" class="led"></div>
+                    <span>송 신</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="btn-row">
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('home')">Home</button>
+                        <span class="btn-label-kr">원위치</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('up')">△</button>
+                        <span class="btn-label-kr">&nbsp;</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('enter')">Enter</button>
+                        <span class="btn-label-kr">입 력</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('change')">Change</button>
+                        <span class="btn-label-kr">변 경</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('start')">Start</button>
+                        <span class="btn-label-kr">기 동</span>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('prev')">◁◁</button>
+                        <span class="btn-label-kr">&nbsp;</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('down')">▽</button>
+                        <span class="btn-label-kr">&nbsp;</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('next')">▷▷</button>
+                        <span class="btn-label-kr">&nbsp;</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('cancel')">Cancel</button>
+                        <span class="btn-label-kr">취 소</span>
+                    </div>
+                    <div class="btn-wrapper">
+                        <button class="circle-btn" onclick="press('stop')">Stop</button>
+                        <span class="btn-label-kr">정 지</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="com-lights">
-            <div class="led-group">
-                <span>R x</span>
-                <div id="rx-led" class="led"></div>
-                <span>통 신</span>
+        <div class="estop-panel">
+            <div class="estop-title">Emergency</div>
+            <div class="estop-title" style="margin-top: -5px;">Stop</div>
+            <div class="estop-kor">비상정지</div>
+            
+            <div class="estop-btn-outer">
+                <button class="estop-btn" onclick="emergencyStop()"></button>
             </div>
-            <div class="led-group">
-                <span>T x</span>
-                <div id="tx-led" class="led"></div>
-                <span>송 신</span>
-            </div>
-        </div>
-
-        <div class="controls">
-            <div class="btn-row">
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('home')">Home</button>
-                    <span class="btn-label-kr">원위치</span>
-                </div>
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('up')">△</button>
-                    <span class="btn-label-kr">&nbsp;</span>
-                </div>
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('enter')">Enter</button>
-                    <span class="btn-label-kr">입 력</span>
-                </div>
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('change')">Change</button>
-                    <span class="btn-label-kr">변 경</span>
-                </div>
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('start')">Start</button>
-                    <span class="btn-label-kr">기 동</span>
-                </div>
-            </div>
-            <div class="btn-row">
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('prev')">◁◁</button>
-                    <span class="btn-label-kr">&nbsp;</span>
-                </div>
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('down')">▽</button>
-                    <span class="btn-label-kr">&nbsp;</span>
-                </div>
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('next')">▷▷</button>
-                    <span class="btn-label-kr">&nbsp;</span>
-                </div>
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('cancel')">Cancel</button>
-                    <span class="btn-label-kr">취 소</span>
-                </div>
-                <div class="btn-wrapper">
-                    <button class="circle-btn" onclick="press('stop')">Stop</button>
-                    <span class="btn-label-kr">정 지</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="estop-panel">
-        <div class="estop-title">Emergency</div>
-        <div class="estop-title" style="margin-top: -5px;">Stop</div>
-        <div class="estop-kor">비상정지</div>
-        
-        <div class="estop-btn-outer">
-            <button class="estop-btn" onclick="emergencyStop()"></button>
         </div>
     </div>
 </div>
 
 <script>
-    // 메뉴 데이터 구조 (editType: 'number' | 'enum', options: [], min/max/unit)
+    // 화면 크기에 맞춰 시뮬레이터 크기 자동 조절
+    function resizeSimulator() {
+        const container = document.querySelector('.device-container');
+        const wrapper = document.querySelector('.device-wrapper');
+        
+        const originalWidth = 1045; // device-container width
+        const originalHeight = 480; // device-container height
+        const padding = 20;
+
+        // 화면 너비와 높이에 맞춰 스케일 계산
+        const availableWidth = window.innerWidth - padding * 2;
+        const availableHeight = window.innerHeight - padding * 2;
+        
+        let scale = Math.min(
+            availableWidth / originalWidth,
+            availableHeight / originalHeight
+        );
+
+        // 최대 크기는 1배로 제한 (확대 방지)
+        if (scale > 1) scale = 1;
+        
+        // 최소 크기 제한 (너무 작아지지 않게, 필요시 제거 가능)
+        if (scale < 0.3) scale = 0.3;
+
+        container.style.transform = `scale(${scale})`;
+        
+        // Flexbox나 flow layout에서 transform scale은 원래 공간을 차지하므로
+        // wrapper의 크기를 조정해 여백을 제거할 수도 있음 (선택 사항)
+        // wrapper.style.height = `${originalHeight * scale}px`;
+        // wrapper.style.width = `${originalWidth * scale}px`;
+        
+        // 모바일 가로 모드 등에서 높이가 부족할 때 스크롤 가능하도록 body 설정은 CSS에서 overflow: auto로 처리함
+    }
+
+    // 초기 로드 및 리사이즈 시 실행
+    window.addEventListener('load', resizeSimulator);
+    window.addEventListener('resize', resizeSimulator);
+
+
+    // --- 기존 로직 ---
+
     const MENU_STRUCTURE = [
         {
             title: "STATUS MENU",
@@ -437,21 +501,21 @@
             subtitle: "INTERLOCK",
             items: [
                 { label: "Vane Operation", val: "Auto Running", editable: true, type: "enum", options: ["Auto Running", "Manual Open", "Manual Close", "Manual Stop"] },
-                { label: "Manual Open No", val: 0, editable: false } // Only editable if mode is Manual? Keeping simple for now
+                { label: "Manual Open No", val: 0, editable: false } 
             ]
         },
         {
             title: "SCHEDULE MENU",
             subtitle: "SCHEDULES",
             items: [
-                { label: "Schedule Index", val: "Off", editable: false } // Simplified
+                { label: "Schedule Index", val: "Off", editable: false } 
             ]
         },
         {
             title: "HOLIDAY MENU",
             subtitle: "HOLIDAYS",
             items: [
-                { label: "Holiday Schedule", val: "None", editable: false } // Simplified
+                { label: "Holiday Schedule", val: "None", editable: false } 
             ]
         },
         {
@@ -478,24 +542,20 @@
     const rxLed = document.getElementById('rx-led');
     const txLed = document.getElementById('tx-led');
     
-    // 상태 변수
-    let state = "OFF"; // OFF, BOOTING, HOME, MENU_SELECT, MENU_DETAIL, PWD_PROMPT_1, PWD_INPUT, EDIT_MODE, TRIP
+    let state = "OFF"; 
     let currentMenuIdx = 0;
     let currentItemIdx = 0;
     
-    // Auth
-    let authLevel = "NONE"; // "NONE", "OPERATOR"
+    let authLevel = "NONE"; 
     let authExpiry = 0;
     
-    // Password Input
     let pwdInput = [0, 0, 0, 0];
     let pwdCursor = 0;
 
-    // Edit Mode
     let editValue = null;
 
     function updateDisplay(l1, l2) {
-        display.line1.innerHTML = l1 || ""; // Use innerHTML for cursor blinking
+        display.line1.innerHTML = l1 || ""; 
         display.line2.innerHTML = l2 || "";
         rxLed.classList.add('on');
         setTimeout(() => rxLed.classList.remove('on'), 100);
@@ -514,7 +574,6 @@
         state = "HOME";
         currentMenuIdx = 0;
         currentItemIdx = 0;
-        // 초기화
         pwdInput = [0,0,0,0];
         pwdCursor = 0;
         const now = new Date();
@@ -547,7 +606,6 @@
         txLed.classList.add('on');
         setTimeout(() => txLed.classList.remove('on'), 100);
 
-        // Home Key: Always return to home (except during critical ops maybe, but per manual it cancels to top)
         if (key === 'home') {
             goHome();
             return;
@@ -582,7 +640,7 @@
                 handleMenuDetailState(key);
                 break;
 
-            case "PWD_PROMPT_1": // Req: Operator / Pwd: Display only
+            case "PWD_PROMPT_1": 
                 if (key === 'change') {
                     state = "PWD_INPUT";
                     pwdInput = [0,0,0,0];
@@ -594,11 +652,11 @@
                 }
                 break;
             
-            case "PWD_INPUT": // ** PASSWORD ** / 0000
+            case "PWD_INPUT": 
                 handlePwdInputState(key);
                 break;
 
-            case "EDIT_MODE": // Editing value
+            case "EDIT_MODE": 
                 handleEditModeState(key);
                 break;
         }
@@ -626,20 +684,14 @@
             state = "MENU_SELECT";
             renderMenuSelect();
         } else if (key === 'change') {
-            // 변경 시도
             if (item.editable) {
                 if (checkAuth()) {
-                    // 이미 인증됨 -> 바로 수정 모드
                     startEditMode(item);
                 } else {
-                    // 인증 필요 -> 비밀번호 프롬프트
                     state = "PWD_PROMPT_1";
                     updateDisplay("Req: &nbsp;Operator", "Pwd: Display only");
                 }
-            } else {
-                // 수정 불가 항목
-                // 깜빡임 효과나 무반응
-            }
+            } 
         }
     }
 
@@ -659,16 +711,14 @@
         } else if (key === 'enter') {
             const inputStr = pwdInput.join('');
             if (inputStr === '1111') {
-                // 인증 성공
                 authLevel = "OPERATOR";
-                authExpiry = Date.now() + 10 * 60 * 1000; // 10분
+                authExpiry = Date.now() + 10 * 60 * 1000; 
                 updateDisplay("-- AUTHORITY --", "&nbsp;&nbsp;&nbsp;Operator");
                 setTimeout(() => {
                     state = "MENU_DETAIL";
                     renderMenuDetail();
                 }, 1500);
             } else {
-                // 인증 실패 (매뉴얼엔 명시 없으나 편의상 리셋)
                 updateDisplay("PASSWORD ERROR", "TRY AGAIN");
                 setTimeout(() => {
                     state = "MENU_DETAIL";
@@ -682,7 +732,6 @@
     }
 
     function renderPwdInput() {
-        // 커서 위치 깜빡임 처리
         let pwdDisplay = "";
         for (let i = 0; i < 4; i++) {
             if (i === pwdCursor) {
@@ -696,7 +745,7 @@
 
     function startEditMode(item) {
         state = "EDIT_MODE";
-        editValue = item.val; // 초기값
+        editValue = item.val; 
         renderEditMode(item);
     }
 
@@ -704,7 +753,6 @@
         let displayVal = "";
         let editDisplay = "";
 
-        // 포맷팅
         const formatVal = (v) => {
             if (item.format) return item.format(v);
             if (item.type === 'number') return v + (item.unit || "");
@@ -723,10 +771,8 @@
         if (key === 'up') {
             if (item.type === 'number') {
                 if (editValue < item.max) editValue += item.step;
-                // 부동소수점 오차 보정
                 editValue = Math.round(editValue * 100) / 100;
             } else if (item.type === 'enum') {
-                // 다음 옵션
                 const currIdx = item.options.indexOf(editValue);
                 const nextIdx = (currIdx + 1) % item.options.length;
                 editValue = item.options[nextIdx];
@@ -737,16 +783,13 @@
                 if (editValue > item.min) editValue -= item.step;
                 editValue = Math.round(editValue * 100) / 100;
             } else if (item.type === 'enum') {
-                // 이전 옵션
                 const currIdx = item.options.indexOf(editValue);
                 const prevIdx = (currIdx - 1 + item.options.length) % item.options.length;
                 editValue = item.options[prevIdx];
             }
             renderEditMode(item);
         } else if (key === 'enter') {
-            // 저장 프로세스
             updateDisplay("--- DownLoaded---", "--Successfully--");
-            // 실제 값 저장
             item.val = editValue;
             setTimeout(() => {
                 state = "MENU_DETAIL";
@@ -770,7 +813,6 @@
         if (item.unit) valStr += item.unit;
         else if (item.type === 'number') valStr += ""; 
 
-        // PDF 형식: 항목명 / Val 값
         updateDisplay(item.label, "Val " + valStr);
     }
 
