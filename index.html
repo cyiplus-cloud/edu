@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENTRONIC10 조작반 시뮬레이터</title>
+    <style>
+        :root {
+            --panel-bg: #e0e0e0;
+            --display-bg: #9eb89e;
+            --display-text: #1a2a1a;
+            --btn-gray: #f5f5f5;
+            --btn-border: #999;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .device-container {
+            display: flex;
+            background-color: var(--panel-bg);
+            border-radius: 25px;
+            padding: 10px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            border: 2px solid #555;
+        }
+
+        .main-panel {
+            width: 800px;
+            height: 450px;
+            position: relative;
+            border: 3px solid #777;
+            border-radius: 20px;
+            margin-right: 15px;
+            background: linear-gradient(135deg, #e6e6e6 0%, #dcdcdc 100%);
+        }
+
+        .estop-panel {
+            width: 200px;
+            height: 450px;
+            border: 3px solid #777;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #e6e6e6 0%, #dcdcdc 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 40px;
+        }
+
+        .brand-area {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+        }
+
+        .brand-logo {
+            font-weight: 900;
+            font-style: italic;
+            font-size: 24px;
+            color: #333;
+            letter-spacing: -1px;
+        }
+
+        .model-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 5px;
+            color: #444;
+        }
+
+        .sub-brand {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .display-container {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 10px;
+            margin-left: 300px;
+            margin-top: 40px;
+            width: 450px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            border: 2px solid #555;
+        }
+
+        .lcd-screen {
+            background-color: var(--display-bg);
+            height: 90px;
+            border-radius: 4px;
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 20px;
+            color: var(--display-text);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.15);
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .lcd-line {
+            white-space: pre;
+            height: 30px;
+            overflow: hidden;
+        }
+
+        .com-lights {
+            position: absolute;
+            left: 180px;
+            bottom: 80px;
+            display: flex;
+            gap: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #444;
+            font-weight: bold;
+        }
+
+        .led-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .led {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #999;
+            border: 1px solid #777;
+        }
+
+        .led.on {
+            background-color: #ff3300;
+            box-shadow: 0 0 8px #ff3300;
+        }
+
+        .controls {
+            position: absolute;
+            right: 40px;
+            bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            width: 70px;
+        }
+
+        .circle-btn {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ffffff, #e0e0e0);
+            border: 1px solid #888;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 3px 5px 8px rgba(0,0,0,0.2), inset 1px 1px 2px white;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .circle-btn:active {
+            transform: scale(0.96) translateY(2px);
+            box-shadow: 1px 2px 4px rgba(0,0,0,0.2);
+            background: #d4d4d4;
+        }
+
+        .btn-label-kr {
+            font-size: 12px;
+            color: #444;
+            font-weight: bold;
+            letter-spacing: -0.5px;
+        }
+
+        .estop-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #c0392b;
+            margin-bottom: 5px;
+        }
+        .estop-kor {
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 60px;
+        }
+
+        .estop-btn-outer {
+            width: 120px;
+            height: 120px;
+            background: #dcdcdc;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #999;
+            box-shadow: inset 2px 2px 5px rgba(255,255,255,0.5), inset -2px -2px 5px rgba(0,0,0,0.2);
+        }
+
+        .estop-btn {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            border-radius: 50%;
+            border: 2px solid #a93226;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), inset 2px 2px 5px rgba(255,255,255,0.3);
+            transition: all 0.2s;
+        }
+
+        .estop-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        #boot-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+            cursor: pointer;
+        }
+        .boot-msg {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .boot-sub {
+            font-size: 16px;
+            color: #aaa;
+        }
+        #boot-overlay.hidden { display: none; }
+        
+        /* Cursor for password input */
+        .cursor {
+            animation: blink 1s step-end infinite;
+            border-bottom: 2px solid var(--display-text);
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="device-container">
+    <div class="main-panel">
+        <div id="boot-overlay" onclick="startBoot()">
+            <div class="boot-msg">POWER S/W ON</div>
+            <div class="boot-sub">클릭하여 전원을 켜세요</div>
+        </div>
+
+        <div class="brand-area">
+            <div class="brand-logo">S Century</div>
+            <div class="model-name">CENTRONIC10</div>
+            <div class="sub-brand">micom control system</div>
+        </div>
+
+        <div class="display-container">
+            <div class="lcd-screen">
+                <div id="line1" class="lcd-line"></div>
+                <div id="line2" class="lcd-line"></div>
+            </div>
+        </div>
+
+        <div class="com-lights">
+            <div class="led-group">
+                <span>R x</span>
+                <div id="rx-led" class="led"></div>
+                <span>통 신</span>
+            </div>
+            <div class="led-group">
+                <span>T x</span>
+                <div id="tx-led" class="led"></div>
+                <span>송 신</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="btn-row">
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('home')">Home</button>
+                    <span class="btn-label-kr">원위치</span>
+                </div>
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('up')">△</button>
+                    <span class="btn-label-kr">&nbsp;</span>
+                </div>
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('enter')">Enter</button>
+                    <span class="btn-label-kr">입 력</span>
+                </div>
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('change')">Change</button>
+                    <span class="btn-label-kr">변 경</span>
+                </div>
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('start')">Start</button>
+                    <span class="btn-label-kr">기 동</span>
+                </div>
+            </div>
+            <div class="btn-row">
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('prev')">◁◁</button>
+                    <span class="btn-label-kr">&nbsp;</span>
+                </div>
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('down')">▽</button>
+                    <span class="btn-label-kr">&nbsp;</span>
+                </div>
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('next')">▷▷</button>
+                    <span class="btn-label-kr">&nbsp;</span>
+                </div>
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('cancel')">Cancel</button>
+                    <span class="btn-label-kr">취 소</span>
+                </div>
+                <div class="btn-wrapper">
+                    <button class="circle-btn" onclick="press('stop')">Stop</button>
+                    <span class="btn-label-kr">정 지</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="estop-panel">
+        <div class="estop-title">Emergency</div>
+        <div class="estop-title" style="margin-top: -5px;">Stop</div>
+        <div class="estop-kor">비상정지</div>
+        
+        <div class="estop-btn-outer">
+            <button class="estop-btn" onclick="emergencyStop()"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 메뉴 데이터 구조 (editType: 'number' | 'enum', options: [], min/max/unit)
+    const MENU_STRUCTURE = [
+        {
+            title: "STATUS MENU",
+            subtitle: "STATUS",
+            items: [
+                { label: "Unit Status", val: "On", editable: false },
+                { label: "CHW Temperature", val: 7.5, unit: " degC", editable: false },
+                { label: "Comp Oil Temp", val: 45.2, unit: " degC", editable: false },
+                { label: "Supply Oil Temp", val: 38.0, unit: " degC", editable: false },
+                { label: "Running Current", val: 85, unit: " %FLA", editable: false },
+                { label: "Vane Position", val: 45, unit: " %", editable: false },
+                { label: "Valve Position", val: 60, unit: " %", editable: false },
+                { label: "Water Flow", val: "Yes", editable: false },
+                { label: "Unit Run Time", val: "1234 Hours", editable: false },
+                { label: "On/Off Count", val: " 45 Times", editable: false }
+            ]
+        },
+        {
+            title: "OTHER STATUS",
+            subtitle: "STATUS",
+            items: [
+                { label: "Remote Input", val: "No", editable: false },
+                { label: "Schedule Running", val: "No", editable: false },
+                { label: "Pump On/Off", val: "Off", editable: false },
+                { label: "Purge Unit On", val: "Off", editable: false },
+                { label: "Oil Pump Run", val: "Yes", editable: false },
+                { label: "System Run", val: "No", editable: false },
+                { label: "Comp Run", val: "No", editable: false },
+                { label: "CHW Inlet Temp", val: 12.0, unit: " degC", editable: false },
+                { label: "CDW Inlet Temp", val: 28.5, unit: " degC", editable: false },
+                { label: "CDW Outlet Temp", val: 32.4, unit: " degC", editable: false }
+            ]
+        },
+        {
+            title: "ALARM STATUS",
+            subtitle: "NO ALARM",
+            items: [
+                { label: "Current Alarm", val: "NONE", editable: false },
+                { label: "Alarm History", val: "Press Enter", editable: false }
+            ]
+        },
+        {
+            title: "SETPOINT MENU",
+            subtitle: "PARAMETERS",
+            items: [
+                { label: "Vane Max Range", val: 100, unit: " %", editable: true, type: "number", min: 0, max: 100, step: 1 },
+                { label: "Vane Min Range", val: 0, unit: " %", editable: true, type: "number", min: 0, max: 100, step: 1 },
+                { label: "Valve Max Range", val: 95, unit: " %", editable: true, type: "number", min: 0, max: 100, step: 1 },
+                { label: "Valve Min Range", val: 10, unit: " %", editable: true, type: "number", min: 0, max: 100, step: 1 },
+                { label: "CHW Temperature", val: 7.00, unit: " degC", editable: true, type: "number", min: 3, max: 15, step: 0.1, format: (v)=>v.toFixed(2) }
+            ]
+        },
+        {
+            title: "MODE SELECTION",
+            subtitle: "OVERRIDES",
+            items: [
+                { label: "Schedule Mode", val: "No", editable: true, type: "enum", options: ["No", "Yes"] },
+                { label: "Remote Mode", val: "No", editable: true, type: "enum", options: ["No", "Yes"] },
+                { label: "Alarm Reset", val: "No", editable: true, type: "enum", options: ["No", "Yes"] }
+            ]
+        },
+        {
+            title: "VANE OPERATION",
+            subtitle: "INTERLOCK",
+            items: [
+                { label: "Vane Operation", val: "Auto Running", editable: true, type: "enum", options: ["Auto Running", "Manual Open", "Manual Close", "Manual Stop"] },
+                { label: "Manual Open No", val: 0, editable: false } // Only editable if mode is Manual? Keeping simple for now
+            ]
+        },
+        {
+            title: "SCHEDULE MENU",
+            subtitle: "SCHEDULES",
+            items: [
+                { label: "Schedule Index", val: "Off", editable: false } // Simplified
+            ]
+        },
+        {
+            title: "HOLIDAY MENU",
+            subtitle: "HOLIDAYS",
+            items: [
+                { label: "Holiday Schedule", val: "None", editable: false } // Simplified
+            ]
+        },
+        {
+            title: "PASSWORD MENU",
+            subtitle: "PASSWORD",
+            items: [
+                { label: "Operator Pass", val: "****", editable: false },
+                { label: "Engineer Pass", val: "****", editable: false }
+            ]
+        },
+        {
+            title: "UNIT OPERATION",
+            subtitle: "FUCTIONS",
+            items: [
+                { label: "Unit Operation", val: "STOP", editable: false }
+            ]
+        }
+    ];
+
+    const display = {
+        line1: document.getElementById('line1'),
+        line2: document.getElementById('line2')
+    };
+    const rxLed = document.getElementById('rx-led');
+    const txLed = document.getElementById('tx-led');
+    
+    // 상태 변수
+    let state = "OFF"; // OFF, BOOTING, HOME, MENU_SELECT, MENU_DETAIL, PWD_PROMPT_1, PWD_INPUT, EDIT_MODE, TRIP
+    let currentMenuIdx = 0;
+    let currentItemIdx = 0;
+    
+    // Auth
+    let authLevel = "NONE"; // "NONE", "OPERATOR"
+    let authExpiry = 0;
+    
+    // Password Input
+    let pwdInput = [0, 0, 0, 0];
+    let pwdCursor = 0;
+
+    // Edit Mode
+    let editValue = null;
+
+    function updateDisplay(l1, l2) {
+        display.line1.innerHTML = l1 || ""; // Use innerHTML for cursor blinking
+        display.line2.innerHTML = l2 || "";
+        rxLed.classList.add('on');
+        setTimeout(() => rxLed.classList.remove('on'), 100);
+    }
+
+    function startBoot() {
+        if (state !== "OFF") return;
+        document.getElementById('boot-overlay').classList.add('hidden');
+        state = "BOOTING";
+        updateDisplay("Display & Key Pad", "POWER ON");
+        setTimeout(() => { if(state==="TRIP") return; updateDisplay("KYUNGWON-CENTURY", "Model DAK - 002"); }, 1500);
+        setTimeout(() => { if(state==="TRIP") return; goHome(); }, 3500);
+    }
+
+    function goHome() {
+        state = "HOME";
+        currentMenuIdx = 0;
+        currentItemIdx = 0;
+        // 초기화
+        pwdInput = [0,0,0,0];
+        pwdCursor = 0;
+        const now = new Date();
+        const dateStr = formatDate(now);
+        updateDisplay(dateStr, "NO ALARM");
+    }
+
+    function formatDate(date) {
+        const yy = String(date.getFullYear()).slice(-2);
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        let hh = date.getHours();
+        const min = String(date.getMinutes()).padStart(2, '0');
+        const ampm = hh >= 12 ? 'PM' : 'AM';
+        hh = hh % 12 || 12;
+        return `${yy}/${mm}/${dd} ${String(hh).padStart(2, '0')}:${min} ${ampm}`;
+    }
+
+    function checkAuth() {
+        if (authLevel === "OPERATOR" && Date.now() < authExpiry) {
+            return true;
+        }
+        authLevel = "NONE";
+        return false;
+    }
+
+    function press(key) {
+        if (state === "OFF" || state === "BOOTING" || state === "TRIP") return;
+
+        txLed.classList.add('on');
+        setTimeout(() => txLed.classList.remove('on'), 100);
+
+        // Home Key: Always return to home (except during critical ops maybe, but per manual it cancels to top)
+        if (key === 'home') {
+            goHome();
+            return;
+        }
+
+        switch(state) {
+            case "HOME":
+                if (['enter', 'up', 'down', 'prev', 'next', 'left', 'right', 'change'].includes(key)) {
+                    state = "MENU_SELECT";
+                    currentMenuIdx = 0;
+                    renderMenuSelect();
+                }
+                break;
+
+            case "MENU_SELECT":
+                if (key === 'enter') {
+                    state = "MENU_DETAIL";
+                    currentItemIdx = 0;
+                    renderMenuDetail();
+                } else if (key === 'next' || key === 'right' || key === 'down') {
+                    currentMenuIdx = (currentMenuIdx + 1) % MENU_STRUCTURE.length;
+                    renderMenuSelect();
+                } else if (key === 'prev' || key === 'left' || key === 'up') {
+                    currentMenuIdx = (currentMenuIdx - 1 + MENU_STRUCTURE.length) % MENU_STRUCTURE.length;
+                    renderMenuSelect();
+                } else if (key === 'cancel') {
+                    goHome();
+                }
+                break;
+
+            case "MENU_DETAIL":
+                handleMenuDetailState(key);
+                break;
+
+            case "PWD_PROMPT_1": // Req: Operator / Pwd: Display only
+                if (key === 'change') {
+                    state = "PWD_INPUT";
+                    pwdInput = [0,0,0,0];
+                    pwdCursor = 0;
+                    renderPwdInput();
+                } else if (key === 'cancel') {
+                    state = "MENU_DETAIL";
+                    renderMenuDetail();
+                }
+                break;
+            
+            case "PWD_INPUT": // ** PASSWORD ** / 0000
+                handlePwdInputState(key);
+                break;
+
+            case "EDIT_MODE": // Editing value
+                handleEditModeState(key);
+                break;
+        }
+    }
+
+    function handleMenuDetailState(key) {
+        const menu = MENU_STRUCTURE[currentMenuIdx];
+        const item = menu.items[currentItemIdx];
+
+        if (key === 'up') {
+            currentItemIdx = (currentItemIdx - 1 + menu.items.length) % menu.items.length;
+            renderMenuDetail();
+        } else if (key === 'down') {
+            currentItemIdx = (currentItemIdx + 1) % menu.items.length;
+            renderMenuDetail();
+        } else if (key === 'next' || key === 'right') {
+            currentMenuIdx = (currentMenuIdx + 1) % MENU_STRUCTURE.length;
+            currentItemIdx = 0;
+            renderMenuDetail();
+        } else if (key === 'prev' || key === 'left') {
+            currentMenuIdx = (currentMenuIdx - 1 + MENU_STRUCTURE.length) % MENU_STRUCTURE.length;
+            currentItemIdx = 0;
+            renderMenuDetail();
+        } else if (key === 'cancel') {
+            state = "MENU_SELECT";
+            renderMenuSelect();
+        } else if (key === 'change') {
+            // 변경 시도
+            if (item.editable) {
+                if (checkAuth()) {
+                    // 이미 인증됨 -> 바로 수정 모드
+                    startEditMode(item);
+                } else {
+                    // 인증 필요 -> 비밀번호 프롬프트
+                    state = "PWD_PROMPT_1";
+                    updateDisplay("Req: &nbsp;Operator", "Pwd: Display only");
+                }
+            } else {
+                // 수정 불가 항목
+                // 깜빡임 효과나 무반응
+            }
+        }
+    }
+
+    function handlePwdInputState(key) {
+        if (key === 'up') {
+            pwdInput[pwdCursor] = (pwdInput[pwdCursor] + 1) % 10;
+            renderPwdInput();
+        } else if (key === 'down') {
+            pwdInput[pwdCursor] = (pwdInput[pwdCursor] - 1 + 10) % 10;
+            renderPwdInput();
+        } else if (key === 'right' || key === 'next') {
+            pwdCursor = (pwdCursor + 1) % 4;
+            renderPwdInput();
+        } else if (key === 'left' || key === 'prev') {
+            pwdCursor = (pwdCursor - 1 + 4) % 4;
+            renderPwdInput();
+        } else if (key === 'enter') {
+            const inputStr = pwdInput.join('');
+            if (inputStr === '1111') {
+                // 인증 성공
+                authLevel = "OPERATOR";
+                authExpiry = Date.now() + 10 * 60 * 1000; // 10분
+                updateDisplay("-- AUTHORITY --", "&nbsp;&nbsp;&nbsp;Operator");
+                setTimeout(() => {
+                    state = "MENU_DETAIL";
+                    renderMenuDetail();
+                }, 1500);
+            } else {
+                // 인증 실패 (매뉴얼엔 명시 없으나 편의상 리셋)
+                updateDisplay("PASSWORD ERROR", "TRY AGAIN");
+                setTimeout(() => {
+                    state = "MENU_DETAIL";
+                    renderMenuDetail();
+                }, 1500);
+            }
+        } else if (key === 'cancel') {
+            state = "MENU_DETAIL";
+            renderMenuDetail();
+        }
+    }
+
+    function renderPwdInput() {
+        // 커서 위치 깜빡임 처리
+        let pwdDisplay = "";
+        for (let i = 0; i < 4; i++) {
+            if (i === pwdCursor) {
+                pwdDisplay += `<span class="cursor">${pwdInput[i]}</span>`;
+            } else {
+                pwdDisplay += pwdInput[i];
+            }
+        }
+        updateDisplay("** PASSWORD **", `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${pwdDisplay}`);
+    }
+
+    function startEditMode(item) {
+        state = "EDIT_MODE";
+        editValue = item.val; // 초기값
+        renderEditMode(item);
+    }
+
+    function renderEditMode(item) {
+        let displayVal = "";
+        let editDisplay = "";
+
+        // 포맷팅
+        const formatVal = (v) => {
+            if (item.format) return item.format(v);
+            if (item.type === 'number') return v + (item.unit || "");
+            return v;
+        };
+
+        displayVal = formatVal(item.val);
+        editDisplay = formatVal(editValue);
+
+        updateDisplay(`Val ${displayVal}`, `${editDisplay}`);
+    }
+
+    function handleEditModeState(key) {
+        const item = MENU_STRUCTURE[currentMenuIdx].items[currentItemIdx];
+
+        if (key === 'up') {
+            if (item.type === 'number') {
+                if (editValue < item.max) editValue += item.step;
+                // 부동소수점 오차 보정
+                editValue = Math.round(editValue * 100) / 100;
+            } else if (item.type === 'enum') {
+                // 다음 옵션
+                const currIdx = item.options.indexOf(editValue);
+                const nextIdx = (currIdx + 1) % item.options.length;
+                editValue = item.options[nextIdx];
+            }
+            renderEditMode(item);
+        } else if (key === 'down') {
+            if (item.type === 'number') {
+                if (editValue > item.min) editValue -= item.step;
+                editValue = Math.round(editValue * 100) / 100;
+            } else if (item.type === 'enum') {
+                // 이전 옵션
+                const currIdx = item.options.indexOf(editValue);
+                const prevIdx = (currIdx - 1 + item.options.length) % item.options.length;
+                editValue = item.options[prevIdx];
+            }
+            renderEditMode(item);
+        } else if (key === 'enter') {
+            // 저장 프로세스
+            updateDisplay("--- DownLoaded---", "--Successfully--");
+            // 실제 값 저장
+            item.val = editValue;
+            setTimeout(() => {
+                state = "MENU_DETAIL";
+                renderMenuDetail();
+            }, 2000);
+        } else if (key === 'cancel') {
+            state = "MENU_DETAIL";
+            renderMenuDetail();
+        }
+    }
+
+    function renderMenuSelect() {
+        const menu = MENU_STRUCTURE[currentMenuIdx];
+        updateDisplay(menu.title, menu.subtitle);
+    }
+
+    function renderMenuDetail() {
+        const menu = MENU_STRUCTURE[currentMenuIdx];
+        const item = menu.items[currentItemIdx];
+        let valStr = item.val;
+        if (item.unit) valStr += item.unit;
+        else if (item.type === 'number') valStr += ""; 
+
+        // PDF 형식: 항목명 / Val 값
+        updateDisplay(item.label, "Val " + valStr);
+    }
+
+    function emergencyStop() {
+        state = "TRIP";
+        updateDisplay("EMERGENCY STOP", "SYSTEM TRIP !!");
+        display.line1.style.color = "red";
+        display.line2.style.color = "red";
+        setTimeout(() => {
+            setTimeout(() => {
+                display.line1.style.color = "var(--display-text)";
+                display.line2.style.color = "var(--display-text)";
+                goHome();
+            }, 5000);
+        }, 500);
+    }
+</script>
+
+</body>
+</html>
