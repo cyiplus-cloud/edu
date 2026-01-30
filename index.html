@@ -21,18 +21,15 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            /* 모바일에서 잘림 방지를 위해 auto로 변경 */
-            overflow: auto; 
+            overflow: auto; /* 스크롤 허용 */
         }
 
         .device-wrapper {
-            /* 스케일링을 위한 래퍼 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            width: 100%;
-            box-sizing: border-box;
+            /* 스케일링된 컨테이너의 크기를 잡아주는 래퍼 
+               JS에서 width/height가 동적으로 설정됩니다.
+            */
+            position: relative;
+            margin: 20px; /* 최소 여백 */
         }
 
         .device-container {
@@ -43,11 +40,12 @@
             box-shadow: 0 30px 60px rgba(0,0,0,0.6);
             border: 2px solid #555;
             
-            /* 고정 크기 유지 (스크립트로 스케일링) */
+            /* 고정 원본 크기 */
             width: 1045px; 
             height: 480px;
-            flex-shrink: 0; /* Flex 컨테이너 내에서 찌그러짐 방지 */
-            transform-origin: center center;
+            
+            /* 중요: 왼쪽 상단을 기준으로 스케일링 */
+            transform-origin: top left;
             transition: transform 0.2s ease;
         }
 
@@ -202,7 +200,6 @@
             color: #333;
             box-shadow: 3px 5px 8px rgba(0,0,0,0.2), inset 1px 1px 2px white;
             transition: transform 0.1s, box-shadow 0.1s;
-            /* 모바일 터치 시 딜레이 제거 */
             touch-action: manipulation; 
         }
 
@@ -285,7 +282,6 @@
         }
         #boot-overlay.hidden { display: none; }
         
-        /* Cursor for password input */
         .cursor {
             animation: blink 1s step-end infinite;
             border-bottom: 2px solid var(--display-text);
@@ -298,7 +294,6 @@
 </head>
 <body>
 
-<!-- 래퍼 추가: 스케일링 적용을 위해 -->
 <div class="device-wrapper">
     <div class="device-container">
         <div class="main-panel">
@@ -394,41 +389,40 @@
 </div>
 
 <script>
-    // 화면 크기에 맞춰 시뮬레이터 크기 자동 조절
+    // 화면 크기에 맞춰 시뮬레이터 크기 자동 조절 (Mobile Fix)
     function resizeSimulator() {
         const container = document.querySelector('.device-container');
         const wrapper = document.querySelector('.device-wrapper');
         
-        const originalWidth = 1045; // device-container width
-        const originalHeight = 480; // device-container height
-        const padding = 20;
+        // 시뮬레이터 원본 크기 (padding/border 포함 고려)
+        const originalWidth = 1070; // 1045 + padding/border margin of error
+        const originalHeight = 500; // 480 + margin
+        const margin = 20; // 좌우 여백
 
-        // 화면 너비와 높이에 맞춰 스케일 계산
-        const availableWidth = window.innerWidth - padding * 2;
-        const availableHeight = window.innerHeight - padding * 2;
+        // 현재 화면 크기
+        const availableWidth = window.innerWidth - (margin * 2);
+        const availableHeight = window.innerHeight - (margin * 2);
         
+        // 스케일 계산
         let scale = Math.min(
             availableWidth / originalWidth,
             availableHeight / originalHeight
         );
 
-        // 최대 크기는 1배로 제한 (확대 방지)
+        // 최대 확대 제한 (너무 커지지 않게)
         if (scale > 1) scale = 1;
-        
-        // 최소 크기 제한 (너무 작아지지 않게, 필요시 제거 가능)
+        // 최소 축소 제한 (너무 작아지지 않게)
         if (scale < 0.3) scale = 0.3;
 
+        // 1. 컨테이너 스케일 적용
         container.style.transform = `scale(${scale})`;
         
-        // Flexbox나 flow layout에서 transform scale은 원래 공간을 차지하므로
-        // wrapper의 크기를 조정해 여백을 제거할 수도 있음 (선택 사항)
-        // wrapper.style.height = `${originalHeight * scale}px`;
-        // wrapper.style.width = `${originalWidth * scale}px`;
-        
-        // 모바일 가로 모드 등에서 높이가 부족할 때 스크롤 가능하도록 body 설정은 CSS에서 overflow: auto로 처리함
+        // 2. 래퍼 크기 재조정 (중요: 레이아웃 공간을 스케일된 크기로 줄임)
+        // 1045px(실제 width) * scale을 적용하여 wrapper가 실제 차지하는 공간을 축소시킴
+        wrapper.style.width = `${1045 * scale}px`;
+        wrapper.style.height = `${480 * scale}px`;
     }
 
-    // 초기 로드 및 리사이즈 시 실행
     window.addEventListener('load', resizeSimulator);
     window.addEventListener('resize', resizeSimulator);
 
